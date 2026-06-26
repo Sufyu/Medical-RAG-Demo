@@ -40,5 +40,5 @@ class QueryResponse(BaseModel):
     """
     question: str
     answer: str
-    chunks: List[RetrievedChunk]
+    chunks: list[RetrievedChunk]
     latency_ms: int
