@@ -1,0 +1,16 @@
+FROM python:3.11-slim AS builder
+WORKDIR /app
+COPY requirements.txt /app/
+RUN apt-get update && apt-get install -y build-essential libpq-dev libsndfile1 ffmpeg && rm -rf /var/lib/apt/lists/*
+# create a venv and install inside it (avoid --user /root/.local)
+RUN python -m venv /opt/venv \
+	&& /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel \
+	&& /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.11-slim
+WORKDIR /app
+COPY --from=builder /opt/venv /opt/venv
+COPY app ./app
+ENV PATH=/opt/venv/bin:$PATH
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
