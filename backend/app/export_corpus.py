@@ -19,14 +19,14 @@ def export_corpus(corpus_dir: str = "../docs"):
     embeddings = []
     
     for row in rows:
-        text, source, embedding_str = row
-        chunks.append({"text": text, "source": source})
+        chunk_text, source, embedding_str = row
+        chunks.append({"text": chunk_text, "source": source})
         # Parse the embedding string back to list
         embedding = eval(embedding_str)  # Convert string representation back to list
         embeddings.append(embedding)
     
-    # Save to corpus.json
-    corpus_path = os.path.join(os.path.dirname(__file__), "corpus.json")
+    # Save to corpus.json in docs directory
+    corpus_path = os.path.join(os.path.dirname(__file__), "../docs", "corpus.json")
     with open(corpus_path, "w") as f:
         json.dump({
             "chunks": chunks,

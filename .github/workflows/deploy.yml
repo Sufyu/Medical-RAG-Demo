@@ -1,0 +1,36 @@
+name: deploy
+on:
+  push:
+    branches: [main]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::058264351864:role/mrag-github
+          aws-region: us-east-1
+      - name: ECR login
+        run: aws ecr get-login-password | docker login --username AWS --password-stdin 058264351864.dkr.ecr.us-east-1.amazonaws.com
+      - name: Build + push image
+        run: |
+          IMAGE=058264351864.dkr.ecr.us-east-1.amazonaws.com/cloud-rag-engine:${GITHUB_SHA::7}
+          docker build -t $IMAGE backend/
+          docker push $IMAGE
+          echo "IMAGE_URI=$IMAGE" >> $GITHUB_ENV
+      - uses: hashicorp/setup-terraform@v3
+      - name: Terraform apply
+        working-directory: infra
+        env:
+          TF_VAR_anthropic_api_key: "${{ secrets.ANTHROPIC_API_KEY }}"
+        run: |
+          terraform init
+          terraform apply -auto-approve -var image_uri=$IMAGE_URI
+      - name: Smoke test
+        run: |
+          URL=$(cd infra && terraform output -raw public_url)
+          curl -sf "$URL/health" | jq .

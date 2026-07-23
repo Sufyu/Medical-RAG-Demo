@@ -17,8 +17,8 @@ def _load():
     if _index is not None:
         return
     
-    # Load the corpus JSON file
-    corpus_path = os.path.join(os.path.dirname(__file__), "corpus.json")
+    # Load the corpus JSON file from docs directory
+    corpus_path = os.path.join(os.path.dirname(__file__), "../docs", "corpus.json")
     with open(corpus_path) as f:
         data = json.load(f)
     
