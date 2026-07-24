@@ -41,6 +41,30 @@ resource "aws_ecr_repository" "app" {
   force_delete         = true
 }
 
+resource "aws_ecr_repository_policy" "lambda_pull" {
+  repository = aws_ecr_repository.app.name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowLambdaPull"
+        Effect    = "Allow"
+        Principal = { Service = "lambda.amazonaws.com" }
+        Action = [
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
+          "ecr:BatchCheckLayerAvailability"
+        ]
+        Condition = {
+          StringEquals = {
+            "aws:sourceArn" = "arn:aws:lambda:us-east-1:058264351864:function:cloud-rag-engine"
+          }
+        }
+      }
+    ]
+  })
+}
+
 # Lambda iam role
 resource "aws_iam_role" "lambda" {
   name = "${var.project}-lambda"
@@ -71,6 +95,11 @@ resource "aws_lambda_function" "app" {
   environment {
     variables = { ANTHROPIC_API_KEY = var.anthropic_api_key }
   }
+
+  depends_on = [
+    aws_ecr_repository_policy.lambda_pull,
+    aws_iam_role_policy_attachment.basic
+  ]
 }
 
 resource "aws_apigatewayv2_api" "http" {
