@@ -1,7 +1,8 @@
 # Main FastAPI application entry point - will be populated with API endpoints
 from fastapi import FastAPI
 from app.models import QueryRequest, QueryResponse
-from app.retrieval import retrieve
+# from app.retrieval import retrieve
+from app.retrieval_lambda import retrieve
 from mangum import Mangum
 
 app = FastAPI()
