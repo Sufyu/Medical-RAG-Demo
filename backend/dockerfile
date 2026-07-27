@@ -3,7 +3,7 @@ FROM public.ecr.aws/lambda/python:3.11 AS builder
 WORKDIR /app
 COPY requirements.txt /app/
 # RUN apt-get update && apt-get install -y build-essential libpq-dev libsndfile1 ffmpeg && rm -rf /var/lib/apt/lists/*
-RUN yum install -y gcc gcc-c++ make postgresql-devel && yum clean all
+RUN yum install -y gcc gcc-c++ make postgresql-devel python3-devel && yum clean all
 RUN python -m venv /opt/venv \
 	&& /opt/venv/bin/python -m pip install --upgrade pip setuptools wheel \
 	&& /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
