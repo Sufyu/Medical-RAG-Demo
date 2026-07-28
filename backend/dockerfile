@@ -4,6 +4,7 @@ COPY requirements.txt /app/
 RUN dnf install -y gcc gcc-c++ make postgresql-devel && dnf clean all
 RUN pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
 COPY app ./app
 COPY docs ./docs
 ENV PYTHONPATH=/app:$PYTHONPATH
