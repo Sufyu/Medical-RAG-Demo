@@ -1,6 +1,7 @@
 FROM public.ecr.aws/lambda/python:3.12
 WORKDIR /app
 COPY requirements.txt /app/
+ENV HF_HOME=/tmp/hf_cache
 RUN dnf install -y gcc gcc-c++ make postgresql-devel && dnf clean all
 RUN pip install --upgrade pip setuptools wheel
 RUN pip install --no-cache-dir -r requirements.txt
@@ -8,7 +9,6 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 COPY app ./app
 COPY docs ./docs
 ENV PYTHONPATH=/app:$PYTHONPATH
-ENV HF_HOME=/tmp/hf_cache
 
 # CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 CMD ["app.main.handler"]
