@@ -90,8 +90,8 @@ resource "aws_lambda_function" "app" {
   package_type  = "Image"
   image_uri     = var.image_uri
   role          = aws_iam_role.lambda.arn
-  memory_size   = 1024
-  timeout       = 30
+  memory_size   = 2048
+  timeout       = 90
   environment {
     variables = { ANTHROPIC_API_KEY = var.anthropic_api_key }
   }
