@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 
 class QueryRequest(BaseModel):
@@ -12,6 +12,38 @@ class QueryRequest(BaseModel):
     """
     question: str = Field(min_length=3, max_length=500)
     top_k: int = Field(default=4, ge=1, le=10)
+
+
+class ConversationTurn(BaseModel):
+    """A single conversation turn with question and answer."""
+    question: str
+    answer: str
+
+
+class ConversationRequest(BaseModel):
+    """
+    Request model for multi-turn conversation.
+    
+    Attributes:
+        conversation_id: Unique identifier for the conversation
+        question: The user's question for this turn
+    """
+    conversation_id: str = Field(min_length=1, max_length=100)
+    question: str = Field(min_length=3, max_length=500)
+
+
+class ConversationResponse(BaseModel):
+    """
+    Response model for conversation endpoint.
+    
+    Attributes:
+        conversation_id: The conversation identifier
+        answer: The LLM-generated answer
+        history: List of all conversation turns
+    """
+    conversation_id: str
+    answer: str
+    history: List[ConversationTurn]
 
 
 class RetrievedChunk(BaseModel):

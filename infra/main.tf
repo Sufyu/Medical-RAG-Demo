@@ -84,6 +84,54 @@ resource "aws_iam_role_policy_attachment" "basic" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
+resource "aws_iam_role_policy" "dynamodb_conversation" {
+  name = "dynamodb-conversation-access"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:Query",
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Scan"
+        ]
+        Resource = aws_dynamodb_table.conversation_history.arn
+      }
+    ]
+  })
+}
+
+# DynamoDB table for conversation history
+resource "aws_dynamodb_table" "conversation_history" {
+  name           = "conversation-history"
+  billing_mode   = "PAY_PER_REQUEST"
+  hash_key       = "conversation_id"
+  range_key      = "timestamp"
+
+  attribute {
+    name = "conversation_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "timestamp"
+    type = "N"
+  }
+
+  ttl {
+    attribute_name = "expires_at"
+    enabled        = false
+  }
+
+  tags = {
+    project = var.project
+  }
+}
+
 
 resource "aws_lambda_function" "app" {
   function_name = var.project
@@ -98,7 +146,9 @@ resource "aws_lambda_function" "app" {
 
   depends_on = [
     aws_ecr_repository_policy.lambda_pull,
-    aws_iam_role_policy_attachment.basic
+    aws_iam_role_policy_attachment.basic,
+    aws_iam_role_policy.dynamodb_conversation,
+    aws_dynamodb_table.conversation_history
   ]
 }
 
