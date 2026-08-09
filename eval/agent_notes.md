@@ -359,3 +359,22 @@ index 4bb8cca..5f949bf 100644
 +    enabled        = true
    }
  
+ ## Round 2 -- Test gap caught by AI review
+
+ ### What was flagged for review
+ The expires_at timestamp assumed a milliseconds-based epoch, but DynamoDB TTL expects seconds.
+
+ ### Manual Fixes
+ diff --git a/backend/app/main.py b/backend/app/main.py
+index f09b35e..11bd391 100644
+--- a/backend/app/main.py
++++ b/backend/app/main.py
+@@ -97,7 +97,7 @@ Question: {request.question}"""
+
+     # Store new turn in DynamoDB
+     timestamp = int(time.time() * 1000)
+-    expires_at = timestamp + (2 * 24 * 60 * 60 * 1000)  # 2 days
++    expires_at = timestamp + (2 * 24 * 60 * 60)  # 2 days
+     if(request.conversation_id):
+         put_conversation_id = request.conversation_id
+     else:

@@ -97,7 +97,7 @@ Question: {request.question}"""
     
     # Store new turn in DynamoDB
     timestamp = int(time.time() * 1000)
-    expires_at = timestamp + (2 * 24 * 60 * 60 * 1000)  # 2 days
+    expires_at = timestamp + (2 * 24 * 60 * 60)  # 2 days
     if(request.conversation_id):
         put_conversation_id = request.conversation_id
     else:
