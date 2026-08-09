@@ -9,6 +9,7 @@ import boto3
 import anthropic
 import time
 import os
+import uuid
 from typing import List
 
 app = FastAPI()
@@ -46,16 +47,19 @@ async def handle_conversation(request: ConversationRequest):
     generates answer using Claude, stores new turn, and returns updated history.
     """
     # Retrieve last 5 turns from DynamoDB
-    try:
-        response = conversation_table.query(
-            KeyConditionExpression='conversation_id = :cid',
-            ExpressionAttributeValues={':cid': request.conversation_id},
-            ScanIndexForward=False,  # Descending by timestamp (newest first)
-            Limit=5
-        )
-        history_items = response.get('Items', [])
-    except Exception as e:
-        # Table might not exist or other error - start fresh
+    if request.conversation_id:
+        try:
+            response = conversation_table.query(
+                KeyConditionExpression='conversation_id = :cid',
+                ExpressionAttributeValues={':cid': request.conversation_id},
+                ScanIndexForward=False,  # Descending by timestamp (newest first)
+                Limit=5
+            )
+            history_items = response.get('Items', [])
+        except Exception as e:
+            # Table might not exist or other error - start fresh
+            history_items = []
+    else:
         history_items = []
     
     # Convert to list of ConversationTurn (reverse to get chronological order)
@@ -93,13 +97,20 @@ Question: {request.question}"""
     
     # Store new turn in DynamoDB
     timestamp = int(time.time() * 1000)
+    expires_at = timestamp + (2 * 24 * 60 * 60 * 1000)  # 2 days
+    if(request.conversation_id):
+        put_conversation_id = request.conversation_id
+    else:
+        put_conversation_id = str(uuid.uuid4())
+
     try:
         conversation_table.put_item(
             Item={
-                'conversation_id': request.conversation_id,
+                'conversation_id': put_conversation_id,
                 'timestamp': timestamp,
                 'question': request.question,
-                'answer': answer_text
+                'answer': answer_text,
+                'expires_at': expires_at
             }
         )
     except Exception as e:
@@ -110,7 +121,7 @@ Question: {request.question}"""
     updated_history = history + [ConversationTurn(question=request.question, answer=answer_text)]
     
     return ConversationResponse(
-        conversation_id=request.conversation_id,
+        conversation_id=put_conversation_id,
         answer=answer_text,
         history=updated_history
     )

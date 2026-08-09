@@ -124,7 +124,7 @@ resource "aws_dynamodb_table" "conversation_history" {
 
   ttl {
     attribute_name = "expires_at"
-    enabled        = false
+    enabled        = true
   }
 
   tags = {

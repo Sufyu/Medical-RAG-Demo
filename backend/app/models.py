@@ -28,7 +28,7 @@ class ConversationRequest(BaseModel):
         conversation_id: Unique identifier for the conversation
         question: The user's question for this turn
     """
-    conversation_id: str = Field(min_length=1, max_length=100)
+    conversation_id: Optional[str] = Field(default=None, min_length=1, max_length=100)
     question: str = Field(min_length=3, max_length=500)
 
 
