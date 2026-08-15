@@ -11,8 +11,28 @@ import time
 import os
 import uuid
 from typing import List
+from app.logging_setup import init
+import logging
 
+# Initialize logging
+init()
+logger = logging.getLogger("app")
+
+# Initialize the FastAPI app
 app = FastAPI()
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    request_id = str(uuid.uuid4())
+    start = time.time()
+    response = await call_next(request)
+    latency_ms = (time.time() - start) * 1000
+    logger.info(
+        "request completed",
+        extra={"request_id": request_id, "latency_ms": round(latency_ms, 2)}
+    )
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 # Initialize AWS clients
 dynamodb = boto3.resource('dynamodb')
@@ -115,7 +135,7 @@ Question: {request.question}"""
         )
     except Exception as e:
         # Log error but don't fail the request
-        print(f"Failed to store conversation: {e}")
+        logger.error("Failed to store conversation", extra={"error": str(e)})
     
     # Return response with updated history
     updated_history = history + [ConversationTurn(question=request.question, answer=answer_text)]
