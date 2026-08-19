@@ -96,8 +96,9 @@ async def handle_conversation(request: ConversationRequest):
         )
         history_str = f"\n\nPrevious conversation:\n{history_str}\n\n"
     
-    # Retrieve relevant chunks for context
-    chunks = retrieve(request.question, top_k=4)
+    # Retrieve relevant chunks for context (include history in retrieval query)
+    retrieval_query = f"{history_str}\nCurrent question: {request.question}"
+    chunks = retrieve(retrieval_query, top_k=4)
     context = "\n\n---\n\n".join(f"[{c.source}]\n{c.text}" for c in chunks)
     
     # Build prompt with history and context

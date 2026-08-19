@@ -1,7 +1,5 @@
 # Cloud RAG Engine
 
-![deploy](.../deploy.yml/badge.svg)
-
 Production RAG service: FastAPI + Docker + AWS Lambda + Terraform + FAISS + DynamoDB + RAGAS eval.
 
 > **Demo (90s):** `loom.com/share/<id>`
