@@ -101,7 +101,7 @@ async def handle_conversation(request: ConversationRequest):
     context = "\n\n---\n\n".join(f"[{c.source}]\n{c.text}" for c in chunks)
     
     # Build prompt with history and context
-    prompt = f"""Answer the question using only the context below. If the context is insufficient, say so.{history_str}
+    prompt = f"""Answer the question using the conversation history and the context below. If both are insufficient, say so.{history_str}
 Context:
 {context}
 

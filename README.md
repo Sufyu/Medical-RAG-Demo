@@ -1,40 +1,19 @@
-# Medical-RAG-Demo
-Production RAG service: FastAPI + AWS Lambda + Terraform + pgvector + RAGAS
+# Cloud RAG Engine
 
-## AWS Endpoint
+![deploy](.../deploy.yml/badge.svg)
 
-**API URL:** `https://2oc1tgm493.execute-api.us-east-1.amazonaws.com/query`
+Production RAG service: FastAPI + Docker + AWS Lambda + Terraform + FAISS + DynamoDB + RAGAS eval.
 
-## Example Query
+> **Demo (90s):** `loom.com/share/<id>`
+> **Live API:** `https://2oc1tgm493.execute-api.us-east-1.amazonaws.com/query`
 
-```bash
-curl -X POST https://2oc1tgm493.execute-api.us-east-1.amazonaws.com/query \
-  -H "Content-Type: application/json" \
-  -d '{
-    "question": "What are the three classic symptoms of diabetes known as the \"three Ps\"?",
-    "top_k": 4
-  }'
-```
-
-**Example Response:**
-```json
-{
-  "question": "What are the three classic symptoms of diabetes known as the \"three Ps\"?",
-  "answer": "According to the context, the three classic symptoms of diabetes known as the \"three Ps\" are:\n\n1. **Polydipsia** (excessive thirst)\n2. **Polyuria** (excessive urination)\n3. **Polyphagia** (excessive hunger)\n\nThese are typically accompanied by weight loss and blurred vision.",
-  "chunks": [
-    {
-      "text": "...",
-      "source": "..."
-    }
-  ],
-  "latency_ms": 123.45
-}
-```
-
-## Parameters
-
-- `question` (string): The medical question to answer
-- `top_k` (integer): Number of relevant context chunks to retrieve
+## What this project demonstrates
+- Designed and deployed a serverless RAG service on AWS Lambda with infrastructure as code (Terraform).
+- Multi-turn conversation support via DynamoDB; agentic-coding workflow documented in AGENT_LOG.md.
+- Measured retrieval quality with RAGAS: [your real numbers here].
+- Structured JSON logging + CloudWatch alarming for production observability.
+- Secure CI/CD via GitHub OIDC — zero long-lived AWS credentials.
+- Framed around a KYC/AML adverse-media use case.
 
 ## Evaluation Results
 
@@ -43,3 +22,17 @@ curl -X POST https://2oc1tgm493.execute-api.us-east-1.amazonaws.com/query \
 | Faithfulness      | 1.00  | RAGAS: answer is grounded in retrieved chunks      |
 | Context precision | 0.87  | Avg fraction of retrieved chunks that are relevant |
 
+## Architecture
+```mermaid
+flowchart LR
+  U[User] -->|HTTPS| AG[API Gateway HTTP API]
+  AG -->|AWS_PROXY| L[Lambda: FastAPI + Mangum]
+  L -->|sentence-transformers| E[(Embedding model, bundled in image)]
+  L -->|cosine search| V[(FAISS, in-memory)]
+  L -->|conversation history| D[(DynamoDB)]
+  L -->|Anthropic API| LLM[Claude Haiku]
+  L -.->|stdout JSON| CW[CloudWatch Logs]
+  CW --> AL{{Errors > 3/min alarm}}
+```
+
+## Evaluation, Deployment, Agentic Log → see /eval, /infra, AGENT_LOG.md, docs/stories.md
