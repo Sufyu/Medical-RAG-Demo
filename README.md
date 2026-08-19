@@ -2,7 +2,7 @@
 
 Production RAG service: FastAPI + Docker + AWS Lambda + Terraform + FAISS + DynamoDB + RAGAS eval.
 
-> **Demo (90s):** `loom.com/share/<id>`
+> **Demo (90s):** `https://www.loom.com/share/ca1579ec76134c96b6ca0dc7dfc57a7b`
 > **Live API:** `https://2oc1tgm493.execute-api.us-east-1.amazonaws.com/query`
 
 ## What this project demonstrates
